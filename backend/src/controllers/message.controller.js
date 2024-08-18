@@ -18,26 +18,32 @@ const sendMessage = asyncHandler(async (req, res) => {
         const cloudinaryResponse = await uploadOnCloudinary(localFilePath);
         const image = cloudinaryResponse;
 
-        newMessage = await db.insert(messages).values({
-            sender: senderId,
-            receiver: receiverId,
-            isRead: false,
-            content: image.url,
-        });
+        newMessage = await db
+            .insert(messages)
+            .values({
+                sender: senderId,
+                receiver: receiverId,
+                isRead: false,
+                content: image.url,
+            })
+            .returning();
     }
 
     if (message) {
-        newMessage = await db.insert(messages).values({
-            sender: senderId,
-            receiver: receiverId,
-            isRead: false,
-            content: message,
-        });
+        newMessage = await db
+            .insert(messages)
+            .values({
+                sender: senderId,
+                receiver: receiverId,
+                isRead: false,
+                content: message,
+            })
+            .returning();
     }
 
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-        io.to(receiverSocketId).emit("chat message", newMessage);
+        io.to(receiverSocketId).emit("chat message", newMessage[0]);
     } else {
         throw new ApiError(500, "no receiverSocketId");
     }
@@ -51,7 +57,7 @@ const getMessages = asyncHandler(async (req, res) => {
     const { receiverId } = req.params;
     const senderId = req.user.id;
 
-    const messages = await db
+    const message = await db
         .select()
         .from(messages)
         .where(
@@ -63,7 +69,7 @@ const getMessages = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json({ message: "messages fetched successfully", messages });
+        .json({ message: "messages fetched successfully", message });
 });
 
 const markAsRead = asyncHandler(async (req, res) => {
