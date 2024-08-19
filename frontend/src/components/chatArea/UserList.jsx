@@ -24,10 +24,7 @@ export default function UserList() {
     const handleClick = (user) => {
         axiosPrivate
             .get(`/message/getMessages/${user.id}`)
-            .then((response) => {
-                console.log(Object.keys(response.data));
-                setStoreConversation(response.data);
-            })
+            .then((response) => setStoreConversation(response.data.message))
             .catch((error) =>
                 console.log(
                     "error while fetching conversation in userList",
@@ -44,6 +41,7 @@ export default function UserList() {
             ) : (
                 userList.map((user) => (
                     <div
+                        key={user.id}
                         className="flex items-center m-1 p-1 border-2 border-darkBrown clickableDiv rounded-lg"
                         onClick={() => handleClick(user)}
                     >

@@ -13,7 +13,7 @@ export const UserContextProvider = ({ children }) => {
     const [storeSocket, setStoreSocket] = useState(null);
     const [storeOnlineUsers, setStoreOnlineUsers] = useState([]);
     const [storeMessages, setStoreMessages] = useState([]);
-    const [storeConversation, setStoreConversation] = useState([]);
+    const [storeConversation, setStoreConversation] = useState(null);
     const [receiver, setReceiver] = useState(null);
     //    const axiosPrivate = useAxiosPrivate();
 

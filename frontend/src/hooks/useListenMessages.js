@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { useUserContext } from "../context/UserContext.jsx";
 
 const useListenMessage = () => {
-    const { setStoreMessages, storeSocket } = useUserContext();
+    const { setStoreConversation, storeSocket } = useUserContext();
 
     useEffect(() => {
         storeSocket?.on("chat message", (msg) => {
-            setStoreMessages((prevStoreMessages) => {
+            setStoreConversation((prevStoreMessages) => {
                 if (prevStoreMessages) {
                     return [...prevStoreMessages, msg];
                 }

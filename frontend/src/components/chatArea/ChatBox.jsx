@@ -1,24 +1,42 @@
 import { useState, useEffect } from "react";
 import { useUserContext } from "../../context/UserContext";
 import { Input, Button } from "../input/index.js";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate.js";
+import useListenMessage from "../../hooks/useListenMessages.js";
 
 export default function ChatBox() {
-    const { receiver, storeConversation, storeOnlineUsers, storeUser } =
-        useUserContext();
+    const {
+        receiver,
+        storeConversation,
+        setStoreConversation,
+        storeOnlineUsers,
+        storeUser,
+    } = useUserContext();
     const [isOnline, setIsOnline] = useState(false);
     const [message, setMessage] = useState("");
+    const axiosPrivate = useAxiosPrivate();
+    useListenMessage();
 
     useEffect(() => {
-        if (storeOnlineUsers.includes(receiver?.id)) {
+        if (storeOnlineUsers.includes(receiver?.id?.toString())) {
             setIsOnline(true);
         } else {
             setIsOnline(false);
         }
-    }, [storeOnlineUsers]);
+    }, [storeOnlineUsers, receiver]);
 
-    const handleSend = () => {};
-
-    console.log(storeConversation);
+    const handleSend = () => {
+        //will have to change to form data for images
+        axiosPrivate
+            .post(`/message/sendMessage/${receiver?.id}`, { message })
+            .then((response) => {
+                setStoreConversation((prevStoreConversation) => [
+                    ...prevStoreConversation,
+                    response.data.newMessage,
+                ]);
+            });
+        setMessage("");
+    };
 
     return storeConversation ? (
         <div className="h-full relative">
@@ -28,27 +46,33 @@ export default function ChatBox() {
                         className="size-12"
                         src={
                             receiver?.avatarUrl
-                                ? receiver?.avatarUurl
+                                ? receiver?.avatarUrl
                                 : "/no-profile-picture-15257.svg"
                         }
                     />
-                    <h1 className="ml-3 font-semibold text-darkBrown">
-                        {receiver?.username}
-                    </h1>
+                    <div className="flex">
+                        <h1 className="ml-3 mr-1 font-semibold text-darkBrown">
+                            {receiver?.username}
+                        </h1>
+                        {isOnline && (
+                            <img className="mt-1" src="/green-dot.svg" />
+                        )}
+                    </div>
                 </div>
                 <div className="bg-lightBrown row-start-2 row-end-6 overflow-auto">
                     {storeConversation?.length === 0 ? (
                         <h1>Start conversation</h1>
                     ) : (
-                        storeConversation.map((message) => {
-                            // const msgAuthor =
-                            //     storeUser.id === message.receiver
-                            //         ? "chat-start"
-                            //         : "chat-end";
+                        storeConversation?.map((message) => {
+                            const msgAuthor =
+                                storeUser.id === message.receiver
+                                    ? "chat-start"
+                                    : "chat-end";
                             return (
-                                <div>
+                                <div className={`chat ${msgAuthor}`}>
                                     <div
-                                        className=" bg-darkBrown text-lightBrown font-semibold"
+                                        key={message.id}
+                                        className="chat-bubble bg-darkBrown text-lightBrown font-semibold"
                                         //ref={lastMsgRef}
                                     >
                                         {message.content}

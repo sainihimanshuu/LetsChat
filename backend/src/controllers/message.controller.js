@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { io, getReceiverSocketId } from "../socket/socket.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { messages } from "../models/models.js";
-import { and, eq } from "drizzle-orm/expressions";
+import { or, and, eq } from "drizzle-orm/expressions";
 import { sql } from "drizzle-orm";
 
 const sendMessage = asyncHandler(async (req, res) => {
@@ -61,9 +61,15 @@ const getMessages = asyncHandler(async (req, res) => {
         .select()
         .from(messages)
         .where(
-            and(
-                eq(messages.sender, senderId),
-                eq(messages.receiver, receiverId)
+            or(
+                and(
+                    eq(messages.sender, senderId),
+                    eq(messages.receiver, receiverId)
+                ),
+                and(
+                    eq(messages.receiver, senderId),
+                    eq(messages.sender, receiverId)
+                )
             )
         );
 
